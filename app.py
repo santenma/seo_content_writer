@@ -2,6 +2,12 @@ import streamlit as st
 import os
 from datetime import datetime
 import json
+from auth import (
+    initialize_auth_session, 
+    render_enhanced_login, 
+    render_user_profile, 
+    logout_user
+)
 
 # Page configuration
 st.set_page_config(
@@ -50,10 +56,9 @@ st.markdown("""
 
 def initialize_session_state():
     """Initialize session state variables"""
-    if 'authenticated' not in st.session_state:
-        st.session_state.authenticated = False
-    if 'username' not in st.session_state:
-        st.session_state.username = ""
+    # Initialize authentication first
+    initialize_auth_session()
+    
     if 'current_page' not in st.session_state:
         st.session_state.current_page = "home"
     if 'generated_content' not in st.session_state:
@@ -92,10 +97,7 @@ def render_sidebar():
             
             st.markdown("---")
             if st.button("🚪 Logout"):
-                st.session_state.authenticated = False
-                st.session_state.username = ""
-                st.session_state.current_page = "home"
-                st.rerun()
+                logout_user()
         else:
             st.info("Please login to access all features")
 
@@ -172,61 +174,10 @@ def render_home_page():
         st.metric("Customization", "High", "Tone, Style, Length")
 
 def render_login_page():
-    """Render login interface"""
-    st.markdown("## 🔐 Login to Access Premium Features")
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    
-    with col2:
-        with st.form("login_form"):
-            st.markdown("### Login Credentials")
-            username = st.text_input("Username", placeholder="Enter your username")
-            password = st.text_input("Password", type="password", placeholder="Enter your password")
-            
-            col_login, col_register = st.columns(2)
-            
-            with col_login:
-                login_submitted = st.form_submit_button("🚀 Login", use_container_width=True)
-            
-            with col_register:
-                register_submitted = st.form_submit_button("📝 Register", use_container_width=True)
-            
-            if login_submitted:
-                # Simple authentication (in production, use proper auth)
-                if username and password:
-                    if authenticate_user(username, password):
-                        st.session_state.authenticated = True
-                        st.session_state.username = username
-                        st.success("Login successful! Redirecting...")
-                        st.rerun()
-                    else:
-                        st.error("Invalid credentials. Please try again.")
-                else:
-                    st.warning("Please enter both username and password.")
-            
-            if register_submitted:
-                if username and password:
-                    if register_user(username, password):
-                        st.success("Registration successful! Please login.")
-                    else:
-                        st.error("Registration failed. Username might already exist.")
-                else:
-                    st.warning("Please enter both username and password.")
+    """Render enhanced login interface"""
+    render_enhanced_login()
 
-def authenticate_user(username, password):
-    """Simple authentication function (replace with proper auth in production)"""
-    # For demo purposes - in production, use proper authentication
-    demo_users = {
-        "demo": "password123",
-        "admin": "admin123",
-        "user": "user123"
-    }
-    return demo_users.get(username) == password
 
-def register_user(username, password):
-    """Simple registration function (replace with proper auth in production)"""
-    # For demo purposes - in production, use proper user management
-    return len(username) >= 3 and len(password) >= 6
 
 def render_content_generator():
     """Render content generator page"""
@@ -319,8 +270,7 @@ def main():
             st.markdown("## 📈 Analytics")
             st.info("Analytics dashboard will be implemented in the next phase.")
         elif st.session_state.current_page == "profile":
-            st.markdown("## 👤 Profile")
-            st.info("User profile management will be implemented in the next phase.")
+            render_user_profile()
 
 if __name__ == "__main__":
     main()
