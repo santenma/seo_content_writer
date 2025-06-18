@@ -9,6 +9,7 @@ from auth import (
     logout_user
 )
 from content_input import render_content_input_interface
+from content_generator import render_content_generation_interface
 
 # Page configuration
 st.set_page_config(
@@ -84,7 +85,8 @@ def render_sidebar():
             # Navigation menu
             pages = {
                 "🏠 Home": "home",
-                "📝 Content Generator": "generator",
+                "📥 Content Input": "content_input", 
+                "🚀 Generate Article": "generate",
                 "⚙️ SEO Settings": "seo_settings",
                 "📊 Bulk Generation": "bulk",
                 "📈 Analytics": "analytics",
@@ -181,7 +183,7 @@ def render_login_page():
 
 
 def render_content_generator():
-    """Render enhanced content generator page"""
+    """Render enhanced content input interface"""
     render_content_input_interface()
 
 def main():
@@ -205,17 +207,21 @@ def main():
         # Authenticated user pages
         if st.session_state.current_page == "home":
             render_home_page()
-        elif st.session_state.current_page == "generator":
+        elif st.session_state.current_page == "content_input":
             render_content_generator()
+        elif st.session_state.current_page == "generate":
+            render_content_generation_interface()
+        elif st.session_state.current_page == "generator":
+            render_content_generator()  # Legacy compatibility
         elif st.session_state.current_page == "seo_settings":
             st.markdown("## ⚙️ SEO Settings")
-            st.info("SEO configuration interface will be implemented in the next phase.")
+            st.info("Advanced SEO configuration interface will be implemented in Phase 2.")
         elif st.session_state.current_page == "bulk":
-            st.markdown("## 📊 Bulk Generation")
-            st.info("Bulk content generation will be implemented in the next phase.")
+            st.markdown("## 📊 Bulk Generation") 
+            st.info("Bulk content generation will be implemented in Phase 3.")
         elif st.session_state.current_page == "analytics":
             st.markdown("## 📈 Analytics")
-            st.info("Analytics dashboard will be implemented in the next phase.")
+            st.info("Analytics dashboard will be implemented in Phase 3.")
         elif st.session_state.current_page == "profile":
             render_user_profile()
 
