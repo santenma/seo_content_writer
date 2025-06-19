@@ -393,38 +393,17 @@ def render_url_input():
                 st.error(f"❌ {result.get('error', 'Failed to extract content')}")
 
 def render_youtube_input():
-    """Render YouTube input interface (placeholder for future implementation)"""
+    """Render YouTube input interface with enhanced functionality"""
     st.markdown("### 🎥 YouTube Video Content")
     
-    youtube_url = st.text_input(
-        "YouTube URL:",
-        placeholder="https://youtube.com/watch?v=...",
-        help="Enter YouTube video URL to extract transcript"
-    )
+    # Import YouTube extractor functionality
+    from youtube_extractor import render_complete_youtube_extractor
     
-    col1, col2 = st.columns(2)
+    # Render the complete YouTube extraction interface
+    render_complete_youtube_extractor()
     
-    with col1:
-        extract_method = st.radio(
-            "Extraction Method:",
-            ["Auto Transcript", "Manual Transcript Upload"],
-            help="Choose how to get video content"
-        )
-    
-    with col2:
-        if youtube_url:
-            st.markdown("#### 🎯 Preview")
-            st.video(youtube_url)
-    
-    if extract_method == "Manual Transcript Upload":
-        transcript_file = st.file_uploader(
-            "Upload Transcript:",
-            type=['txt', 'srt', 'vtt'],
-            help="Upload transcript file if available"
-        )
-    
-    if st.button("🎥 Extract Video Content", type="primary"):
-        st.info("🚧 YouTube transcript extraction will be implemented in Phase 3")
+    # Integration note
+    st.info("💡 YouTube content will be automatically processed and ready for article generation once extracted.")
 
 def render_audio_input():
     """Render audio input interface (placeholder for future implementation)"""
