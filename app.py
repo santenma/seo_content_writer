@@ -13,6 +13,7 @@ from content_generator import render_content_generation_interface
 from seo_settings import render_complete_seo_settings
 from style_customization import render_complete_style_customization
 from output_editor import render_complete_output_editor
+from download_manager import render_complete_download_manager
 
 # Page configuration
 st.set_page_config(
@@ -91,6 +92,7 @@ def render_sidebar():
                 "📥 Content Input": "content_input", 
                 "🚀 Generate Article": "generate",
                 "✏️ Edit Content": "editor",
+                "📥 Download & Export": "download",
                 "⚙️ SEO Settings": "seo_settings",
                 "🎨 Style & Voice": "style_settings",
                 "📊 Bulk Generation": "bulk",
@@ -218,6 +220,8 @@ def main():
             render_content_generation_interface()
         elif st.session_state.current_page == "editor":
             render_complete_output_editor()
+        elif st.session_state.current_page == "download":
+            render_complete_download_manager()
         elif st.session_state.current_page == "generator":
             render_content_generator()  # Legacy compatibility
         elif st.session_state.current_page == "seo_settings":
