@@ -15,6 +15,7 @@ from style_customization import render_complete_style_customization
 from output_editor import render_complete_output_editor
 from download_manager import render_complete_download_manager
 from youtube_extractor import render_complete_youtube_extractor
+from audio_processor import render_complete_audio_processor
 
 # Page configuration
 st.set_page_config(
