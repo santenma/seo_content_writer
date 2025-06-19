@@ -11,6 +11,7 @@ from auth import (
 from content_input import render_content_input_interface
 from content_generator import render_content_generation_interface
 from seo_settings import render_complete_seo_settings
+from style_customization import render_complete_style_customization
 
 # Page configuration
 st.set_page_config(
@@ -89,6 +90,7 @@ def render_sidebar():
                 "📥 Content Input": "content_input", 
                 "🚀 Generate Article": "generate",
                 "⚙️ SEO Settings": "seo_settings",
+                "🎨 Style & Voice": "style_settings",
                 "📊 Bulk Generation": "bulk",
                 "📈 Analytics": "analytics",
                 "👤 Profile": "profile"
@@ -216,6 +218,8 @@ def main():
             render_content_generator()  # Legacy compatibility
         elif st.session_state.current_page == "seo_settings":
             render_complete_seo_settings()
+        elif st.session_state.current_page == "style_settings":
+            render_complete_style_customization()
         elif st.session_state.current_page == "bulk":
             st.markdown("## 📊 Bulk Generation") 
             st.info("Bulk content generation will be implemented in Phase 3.")
