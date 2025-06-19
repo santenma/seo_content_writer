@@ -10,6 +10,7 @@ from auth import (
 )
 from content_input import render_content_input_interface
 from content_generator import render_content_generation_interface
+from seo_settings import render_complete_seo_settings
 
 # Page configuration
 st.set_page_config(
@@ -214,8 +215,7 @@ def main():
         elif st.session_state.current_page == "generator":
             render_content_generator()  # Legacy compatibility
         elif st.session_state.current_page == "seo_settings":
-            st.markdown("## ⚙️ SEO Settings")
-            st.info("Advanced SEO configuration interface will be implemented in Phase 2.")
+            render_complete_seo_settings()
         elif st.session_state.current_page == "bulk":
             st.markdown("## 📊 Bulk Generation") 
             st.info("Bulk content generation will be implemented in Phase 3.")
