@@ -12,6 +12,7 @@ from content_input import render_content_input_interface
 from content_generator import render_content_generation_interface
 from seo_settings import render_complete_seo_settings
 from style_customization import render_complete_style_customization
+from output_editor import render_complete_output_editor
 
 # Page configuration
 st.set_page_config(
@@ -89,6 +90,7 @@ def render_sidebar():
                 "🏠 Home": "home",
                 "📥 Content Input": "content_input", 
                 "🚀 Generate Article": "generate",
+                "✏️ Edit Content": "editor",
                 "⚙️ SEO Settings": "seo_settings",
                 "🎨 Style & Voice": "style_settings",
                 "📊 Bulk Generation": "bulk",
@@ -214,6 +216,8 @@ def main():
             render_content_generator()
         elif st.session_state.current_page == "generate":
             render_content_generation_interface()
+        elif st.session_state.current_page == "editor":
+            render_complete_output_editor()
         elif st.session_state.current_page == "generator":
             render_content_generator()  # Legacy compatibility
         elif st.session_state.current_page == "seo_settings":
