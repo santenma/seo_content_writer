@@ -406,28 +406,17 @@ def render_youtube_input():
     st.info("💡 YouTube content will be automatically processed and ready for article generation once extracted.")
 
 def render_audio_input():
-    """Render audio input interface (placeholder for future implementation)"""
+    """Render audio input interface with comprehensive processing"""
     st.markdown("### 🎧 Audio File Processing")
     
-    audio_file = st.file_uploader(
-        "Upload Audio File:",
-        type=['mp3', 'wav', 'ogg', 'm4a', 'flac'],
-        help="Upload audio file for transcription"
-    )
+    # Import audio processor functionality
+    from audio_processor import render_complete_audio_processor
     
-    if audio_file:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.audio(audio_file, format='audio/mp3')
-        
-        with col2:
-            st.markdown("#### ⚙️ Transcription Options")
-            language = st.selectbox("Language:", ["English", "Spanish", "French", "German"])
-            quality = st.select_slider("Quality:", ["Fast", "Balanced", "High"])
+    # Render the complete audio processing interface
+    render_complete_audio_processor()
     
-    if st.button("🎧 Transcribe Audio", type="primary", disabled=not audio_file):
-        st.info("🚧 Audio transcription will be implemented in Phase 3")
+    # Integration note
+    st.info("💡 Audio content will be automatically transcribed and processed for article generation.")
 
 def render_document_input():
     """Render document upload interface"""
