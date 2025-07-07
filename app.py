@@ -16,6 +16,7 @@ from output_editor import render_complete_output_editor
 from download_manager import render_complete_download_manager
 from youtube_extractor import render_complete_youtube_extractor
 from audio_processor import render_complete_audio_processor
+from seo_analyzer import render_complete_seo_analyzer
 
 # Page configuration
 st.set_page_config(
@@ -95,6 +96,7 @@ def render_sidebar():
                 "🚀 Generate Article": "generate",
                 "✏️ Edit Content": "editor",
                 "📥 Download & Export": "download",
+                "📊 SEO Analysis": "seo_analysis",
                 "⚙️ SEO Settings": "seo_settings",
                 "🎨 Style & Voice": "style_settings",
                 "📊 Bulk Generation": "bulk",
@@ -224,6 +226,8 @@ def main():
             render_complete_output_editor()
         elif st.session_state.current_page == "download":
             render_complete_download_manager()
+        elif st.session_state.current_page == "seo_analysis":
+            render_complete_seo_analyzer()
         elif st.session_state.current_page == "generator":
             render_content_generator()  # Legacy compatibility
         elif st.session_state.current_page == "seo_settings":
