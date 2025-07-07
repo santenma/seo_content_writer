@@ -552,7 +552,62 @@ class SEOContentGenerator:
         return schema
     
     def analyze_seo_score(self, content: str, primary_keyword: str, secondary_keywords: List[str]) -> Dict:
-        """Analyze SEO score of generated content"""
+        """Analyze SEO score of generated content with enhanced analysis"""
+        # Import the enhanced SEO analyzer
+        try:
+            from seo_analyzer import SEOAnalyzer
+            
+            # Create analyzer instance
+            analyzer = SEOAnalyzer()
+            
+            # Prepare content data for analysis
+            content_data = {
+                'title': 'Generated Content',
+                'content': content,
+                'meta_description': '',
+                'primary_keyword': primary_keyword,
+                'secondary_keywords': secondary_keywords
+            }
+            
+            # Prepare SEO settings
+            seo_settings = {
+                'primary_keyword': primary_keyword,
+                'secondary_keywords': secondary_keywords,
+                'content_type': 'blog_post'
+            }
+            
+            # Perform comprehensive analysis
+            analysis_results = analyzer.analyze_content_comprehensive(content_data, seo_settings)
+            
+            # Extract key metrics for backward compatibility
+            overall_score = analysis_results.get('overall_score', 0)
+            grade = analysis_results.get('grade', 'F')
+            issues = [issue['issue'] for issue in analysis_results.get('issues', [])]
+            recommendations = [rec['recommendation'] for rec in analysis_results.get('recommendations', [])]
+            
+            # Get keyword density from detailed analysis
+            keyword_analysis = analysis_results.get('detailed_analysis', {}).get('keyword_optimization', {})
+            keyword_metrics = keyword_analysis.get('metrics', {})
+            primary_analysis = keyword_metrics.get('primary_keyword', {})
+            keyword_density = primary_analysis.get('density', 0)
+            
+            return {
+                'score': overall_score,
+                'keyword_density': keyword_density,
+                'word_count': len(content.split()),
+                'h2_count': content.count('## '),
+                'issues': issues,
+                'recommendations': recommendations,
+                'grade': grade,
+                'detailed_analysis': analysis_results  # Store full analysis for advanced features
+            }
+            
+        except ImportError:
+            # Fallback to basic analysis if enhanced analyzer not available
+            return self.analyze_seo_score_basic(content, primary_keyword, secondary_keywords)
+    
+    def analyze_seo_score_basic(self, content: str, primary_keyword: str, secondary_keywords: List[str]) -> Dict:
+        """Basic SEO analysis as fallback"""
         words = content.split()
         total_words = len(words)
         
@@ -638,6 +693,505 @@ class SEOContentGenerator:
             "recommendations": recommendations,
             "grade": self.get_seo_grade(final_score)
         }
+    
+    def get_seo_grade(self, score: int) -> str:
+        """Convert SEO score to letter grade"""
+        if score >= 90:
+            return "A+"
+        elif score >= 80:
+            return "A"
+        elif score >= 70:
+            return "B"
+        elif score >= 60:
+            return "C"
+        elif score >= 50:
+            return "D"
+        else:
+            return "F"
+
+def render_content_generation_interface():
+    """Render the content generation interface"""
+    st.markdown("## 🚀 Generate SEO Content")
+    
+    # Check if we have content to work with
+    if 'current_content' not in st.session_state or not st.session_state.current_content:
+        st.warning("⚠️ No content detected. Please extract content first using the Content Input section.")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("📥 Go to Content Input", type="primary"):
+                st.session_state.current_page = "content_input"
+                st.rerun()
+        
+        with col2:
+            if st.button("⚙️ Configure SEO Settings", type="secondary"):
+                st.session_state.current_page = "seo_settings"
+                st.rerun()
+        
+        return
+    
+    # Display source content summary
+    content_data = st.session_state.current_content
+    
+    with st.expander("📋 Source Content Summary", expanded=False):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("📝 Words", content_data.get('word_count', 0))
+        with col2:
+            st.metric("⏱️ Read Time", f"{content_data.get('reading_time', 0)} min")
+        with col3:
+            st.metric("📰 Title", "✅" if content_data.get('title') else "❌")
+        
+        if content_data.get('title'):
+            st.markdown(f"**Title:** {content_data['title']}")
+        
+        preview = content_data.get('content', '')[:200] + "..." if len(content_data.get('content', '')) > 200 else content_data.get('content', '')
+        st.markdown(f"**Preview:** {preview}")
+    
+    # SEO Settings Quick Config
+    st.markdown("### ⚙️ SEO Configuration")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        primary_keyword = st.text_input(
+            "🎯 Primary Keyword *",
+            value=st.session_state.seo_settings.get('primary_keyword', ''),
+            placeholder="Enter main keyword to optimize for",
+            help="The main keyword you want to rank for"
+        )
+        
+        content_length = st.slider(
+            "📏 Target Word Count",
+            min_value=300,
+            max_value=3000,
+            value=st.session_state.seo_settings.get('content_length', 800),
+            step=100,
+            help="Target length for the generated article"
+        )
+    
+    with col2:
+        secondary_keywords = st.text_area(
+            "🔍 Secondary Keywords",
+            value='\n'.join(st.session_state.seo_settings.get('secondary_keywords', [])),
+            placeholder="Enter one keyword per line\nrelated keyword 1\nrelated keyword 2",
+            height=80,
+            help="Related keywords to include naturally"
+        )
+        
+        tone = st.selectbox(
+            "🎭 Content Tone",
+            ["professional", "conversational", "authoritative", "friendly", "technical"],
+            index=["professional", "conversational", "authoritative", "friendly", "technical"].index(
+                st.session_state.seo_settings.get('tone', 'professional')
+            ),
+            help="Writing style for the generated content"
+        )
+    
+    # Content type selection
+    content_type = st.selectbox(
+        "📄 Content Type",
+        ["blog_post", "how_to_guide", "review", "landing_page"],
+        format_func=lambda x: {
+            "blog_post": "📝 Blog Post",
+            "how_to_guide": "📋 How-To Guide", 
+            "review": "⭐ Review Article",
+            "landing_page": "🎯 Landing Page"
+        }[x],
+        index=["blog_post", "how_to_guide", "review", "landing_page"].index(
+            st.session_state.seo_settings.get('content_type', 'blog_post')
+        ),
+        help="Type of content to generate"
+    )
+    
+    # Update session state
+    secondary_keywords_list = [kw.strip() for kw in secondary_keywords.split('\n') if kw.strip()]
+    
+    st.session_state.seo_settings.update({
+        'primary_keyword': primary_keyword,
+        'secondary_keywords': secondary_keywords_list,
+        'content_length': content_length,
+        'tone': tone,
+        'content_type': content_type
+    })
+    
+    # Generation controls
+    st.markdown("---")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("🚀 Generate Article", type="primary", disabled=not primary_keyword):
+            generate_article_content()
+    
+    with col2:
+        if st.button("⚙️ Advanced Settings"):
+            st.session_state.current_page = "seo_settings" 
+            st.rerun()
+    
+    with col3:
+        if st.button("🔄 Reset Settings"):
+            st.session_state.seo_settings = {
+                'primary_keyword': '',
+                'secondary_keywords': [],
+                'content_length': 800,
+                'tone': 'professional',
+                'content_type': 'blog_post'
+            }
+            st.rerun()
+    
+    # Display generated content if available
+    if 'generated_article' in st.session_state and st.session_state.generated_article:
+        display_generated_article()
+
+def generate_article_content():
+    """Generate the SEO-optimized article"""
+    try:
+        # Initialize generator
+        if 'seo_generator' not in st.session_state:
+            st.session_state.seo_generator = SEOContentGenerator()
+        
+        # Show progress
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        status_text.text("🔄 Initializing content generation...")
+        progress_bar.progress(20)
+        
+        status_text.text("📝 Generating article structure...")
+        progress_bar.progress(40)
+        
+        # Generate content
+        generator = st.session_state.seo_generator
+        source_content = st.session_state.current_content
+        seo_settings = st.session_state.seo_settings
+        
+        status_text.text("🎯 Optimizing for SEO...")
+        progress_bar.progress(60)
+        
+        result = generator.generate_seo_article(source_content, seo_settings)
+        
+        status_text.text("📊 Analyzing SEO score...")
+        progress_bar.progress(80)
+        
+        if "error" in result:
+            st.error(f"❌ {result['error']}")
+            progress_bar.empty()
+            status_text.empty()
+            return
+        
+        # Store generated content
+        st.session_state.generated_article = result
+        
+        # Update user stats
+        if st.session_state.authenticated and 'auth_manager' in st.session_state:
+            st.session_state.auth_manager.update_user_stats(
+                st.session_state.username, 
+                content_generated=True
+            )
+        
+        progress_bar.progress(100)
+        status_text.text("✅ Article generated successfully!")
+        
+        # Clear progress indicators
+        import time
+        time.sleep(1)
+        progress_bar.empty()
+        status_text.empty()
+        
+        st.success("🎉 SEO-optimized article generated successfully!")
+        st.rerun()
+        
+    except Exception as e:
+        st.error(f"❌ Error generating content: {str(e)}")
+
+def display_generated_article():
+    """Display the generated article with options to edit and download"""
+    st.markdown("---")
+    st.markdown("## 📄 Generated Article")
+    
+    article_data = st.session_state.generated_article
+    
+    # SEO Score Display
+    seo_analysis = article_data.get('seo_analysis', {})
+    score = seo_analysis.get('score', 0)
+    grade = seo_analysis.get('grade', 'F')
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        score_color = "🟢" if score >= 80 else "🟡" if score >= 60 else "🔴"
+        st.metric("SEO Score", f"{score_color} {score}/100")
+    
+    with col2:
+        st.metric("Grade", f"📊 {grade}")
+    
+    with col3:
+        st.metric("Word Count", f"📝 {article_data.get('word_count', 0)}")
+    
+    with col4:
+        keyword_density = seo_analysis.get('keyword_density', 0)
+        st.metric("Keyword Density", f"🎯 {keyword_density:.1f}%")
+    
+    # Enhanced SEO Analysis Button
+    if st.button("📊 Advanced SEO Analysis", type="secondary"):
+        # Check if enhanced analysis is available
+        detailed_analysis = seo_analysis.get('detailed_analysis')
+        if detailed_analysis:
+            st.session_state.current_seo_analysis = detailed_analysis
+            st.session_state.current_page = "seo_analysis"
+            st.rerun()
+        else:
+            st.info("💡 Enhanced SEO analysis will be available when the advanced analyzer is integrated")
+    
+    # Article content tabs
+    tab1, tab2, tab3, tab4 = st.tabs(["📄 Article", "✏️ Edit", "📊 SEO Analysis", "💾 Export"])
+    
+    with tab1:
+        display_article_preview(article_data)
+    
+    with tab2:
+        display_article_editor(article_data)
+    
+    with tab3:
+        display_seo_analysis(seo_analysis)
+    
+    with tab4:
+        display_export_options(article_data)
+
+def display_article_preview(article_data):
+    """Display article preview"""
+    st.markdown("### 📰 Article Preview")
+    
+    # Title
+    st.markdown(f"# {article_data.get('title', 'Untitled')}")
+    
+    # Meta description
+    if article_data.get('meta_description'):
+        with st.expander("📝 Meta Description"):
+            st.write(article_data['meta_description'])
+    
+    # Article content
+    content = article_data.get('content', '')
+    st.markdown(content)
+    
+    # Schema markup preview
+    if article_data.get('schema_markup'):
+        with st.expander("🔧 Schema Markup (JSON-LD)"):
+            st.json(article_data['schema_markup'])
+
+def display_article_editor(article_data):
+    """Display article editor"""
+    st.markdown("### ✏️ Edit Your Article")
+    
+    # Editable title
+    edited_title = st.text_input(
+        "Article Title:",
+        value=article_data.get('title', ''),
+        key="edit_article_title"
+    )
+    
+    # Editable meta description
+    edited_meta = st.text_area(
+        "Meta Description:",
+        value=article_data.get('meta_description', ''),
+        height=80,
+        key="edit_meta_description",
+        help="Keep under 160 characters for optimal SEO"
+    )
+    
+    # Editable content
+    edited_content = st.text_area(
+        "Article Content:",
+        value=article_data.get('content', ''),
+        height=400,
+        key="edit_article_content"
+    )
+    
+    # Save changes
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("💾 Save Changes", type="primary"):
+            # Update the generated article
+            st.session_state.generated_article['title'] = edited_title
+            st.session_state.generated_article['meta_description'] = edited_meta
+            st.session_state.generated_article['content'] = edited_content
+            st.session_state.generated_article['word_count'] = len(edited_content.split())
+            
+            # Recalculate SEO score
+            generator = st.session_state.seo_generator
+            primary_keyword = article_data.get('primary_keyword', '')
+            secondary_keywords = article_data.get('secondary_keywords', [])
+            
+            new_analysis = generator.analyze_seo_score(edited_content, primary_keyword, secondary_keywords)
+            st.session_state.generated_article['seo_analysis'] = new_analysis
+            
+            st.success("✅ Changes saved successfully!")
+            st.rerun()
+    
+    with col2:
+        if st.button("🔄 Reset to Original"):
+            st.rerun()
+
+def display_seo_analysis(seo_analysis):
+    """Display detailed SEO analysis"""
+    st.markdown("### 📊 Detailed SEO Analysis")
+    
+    # Overall metrics
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric("Keyword Density", f"{seo_analysis.get('keyword_density', 0):.1f}%")
+        density = seo_analysis.get('keyword_density', 0)
+        if 1.0 <= density <= 2.0:
+            st.success("✅ Optimal density")
+        elif density < 1.0:
+            st.warning("⚠️ Low density")
+        else:
+            st.error("❌ Too high")
+    
+    with col2:
+        st.metric("Word Count", seo_analysis.get('word_count', 0))
+        words = seo_analysis.get('word_count', 0)
+        if 800 <= words <= 2000:
+            st.success("✅ Good length")
+        elif words < 800:
+            st.warning("⚠️ Consider longer")
+        else:
+            st.info("ℹ️ Very comprehensive")
+    
+    with col3:
+        st.metric("Headings (H2)", seo_analysis.get('h2_count', 0))
+        h2s = seo_analysis.get('h2_count', 0)
+        if h2s >= 3:
+            st.success("✅ Well structured")
+        else:
+            st.warning("⚠️ Add more headings")
+    
+    # Issues and recommendations
+    issues = seo_analysis.get('issues', [])
+    recommendations = seo_analysis.get('recommendations', [])
+    
+    if issues:
+        st.markdown("#### ⚠️ Issues Found")
+        for issue in issues:
+            st.warning(f"• {issue}")
+    
+    if recommendations:
+        st.markdown("#### 💡 Recommendations")
+        for rec in recommendations:
+            st.info(f"• {rec}")
+    
+    if not issues and not recommendations:
+        st.success("🎉 Excellent! No major SEO issues found.")
+
+def display_export_options(article_data):
+    """Display export options"""
+    st.markdown("### 💾 Export Your Article")
+    
+    # Export formats
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### 📝 Text Formats")
+        
+        # Markdown export
+        markdown_content = f"# {article_data.get('title', '')}\n\n"
+        markdown_content += f"**Meta Description:** {article_data.get('meta_description', '')}\n\n"
+        markdown_content += article_data.get('content', '')
+        
+        st.download_button(
+            label="📄 Download as Markdown",
+            data=markdown_content,
+            file_name=f"{article_data.get('title', 'article').replace(' ', '_').lower()}.md",
+            mime="text/markdown"
+        )
+        
+        # HTML export
+        html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>{article_data.get('title', '')}</title>
+    <meta name="description" content="{article_data.get('meta_description', '')}">
+    <meta name="keywords" content="{article_data.get('primary_keyword', '')}">
+</head>
+<body>
+    <h1>{article_data.get('title', '')}</h1>
+    {article_data.get('content', '').replace('## ', '<h2>').replace('\n\n', '</p><p>').replace('\n', '<br>')}
+</body>
+</html>"""
+        
+        st.download_button(
+            label="🌐 Download as HTML",
+            data=html_content,
+            file_name=f"{article_data.get('title', 'article').replace(' ', '_').lower()}.html",
+            mime="text/html"
+        )
+    
+    with col2:
+        st.markdown("#### 🔧 SEO Data")
+        
+        # JSON export with all data
+        full_data = {
+            "article": article_data,
+            "exported_at": datetime.now().isoformat(),
+            "seo_settings": st.session_state.seo_settings
+        }
+        
+        st.download_button(
+            label="📊 Download SEO Data (JSON)",
+            data=json.dumps(full_data, indent=2),
+            file_name=f"seo_data_{article_data.get('title', 'article').replace(' ', '_').lower()}.json",
+            mime="application/json"
+        )
+        
+        # Schema markup export
+        if article_data.get('schema_markup'):
+            st.download_button(
+                label="🏷️ Download Schema Markup",
+                data=json.dumps(article_data['schema_markup'], indent=2),
+                file_name=f"schema_{article_data.get('title', 'article').replace(' ', '_').lower()}.json",
+                mime="application/json"
+            )
+    
+    # Copy to clipboard options
+    st.markdown("#### 📋 Quick Copy")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("📄 Copy Title"):
+            st.code(article_data.get('title', ''), language=None)
+    
+    with col2:
+        if st.button("📝 Copy Meta Description"):
+            st.code(article_data.get('meta_description', ''), language=None)
+    
+    with col3:
+        if st.button("🎯 Copy Primary Keyword"):
+            st.code(article_data.get('primary_keyword', ''), language=None)
+    
+    # Navigation to other tools
+    st.markdown("---")
+    st.markdown("#### 🚀 Next Steps")
+    
+    nav_col1, nav_col2, nav_col3 = st.columns(3)
+    
+    with nav_col1:
+        if st.button("✏️ Edit Content", type="secondary"):
+            st.session_state.current_page = "editor"
+            st.rerun()
+    
+    with nav_col2:
+        if st.button("📥 Download & Export", type="secondary"):
+            st.session_state.current_page = "download"
+            st.rerun()
+    
+    with nav_col3:
+        if st.button("📊 Generate More", type="secondary"):
+            st.session_state.current_page = "bulk"
+            st.rerun()
+
     
     def get_seo_grade(self, score: int) -> str:
         """Convert SEO score to letter grade"""
